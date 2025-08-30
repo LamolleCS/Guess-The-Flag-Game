@@ -1,0 +1,199 @@
+# Este arquivo contém uma lista de todos os países com suas capitais, continentes e códigos ISO, incluindo Taiwan e Kosovo, mas não o Curdistão nem a Nova Caledônia.
+# Formato: nome,capital,continente,codigo_iso
+Afeganistão,Cabul,Ásia,AF
+Albânia,Tirana,Europa,AL
+Argélia,Argel,África,DZ
+Andorra,Andorra-a-Velha,Europa,AD
+Angola,Luanda,África,AO
+Antígua e Barbuda,Saint John's,América do Norte,AG
+Argentina,Buenos Aires,América do Sul,AR
+Armênia,Erevan,Ásia,AM
+Austrália,Camberra,Oceania,AU
+Áustria,Viena,Europa,AT
+Azeibaijão,Baku,Ásia,AZ
+Bahamas,Nassau,América do Norte,BS
+Bahrein,Manama,Ásia,BH
+Bangladesh,Daca,Ásia,BD
+Barbados,Bridgetown,América do Norte,BB
+Bielorrússia,Minsk,Europa,BY
+Bélgica,Bruxelas,Europa,BE
+Belize,Belmopan,América do Norte,BZ
+Benin,Porto Novo,África,BJ
+Butão,Timbu,Ásia,BT
+Bolívia,Sucre,América do Sul,BO
+Bósnia e Herzegovina,Sarajevo,Europa,BA
+Botsuana,Gaborone,África,BW
+Brasil,Brasília,América do Sul,BR
+Brunei,Bandar Seri Begawan,Ásia,BN
+Bulgária,Sófia,Europa,BG
+Burkina Faso,Uagadugu,África,BF
+Burundi,Gitega,África,BI
+Cabo Verde,Praia,África,CV
+Camboja,Phnom Penh,Ásia,KH
+Camarões,Iaundé,África,CM
+Canadá,Ottawa,América do Norte,CA
+República Centro-Africana,Bangui,África,CF
+Chade,N'Djamena,África,TD
+Chile,Santiago,América do Sul,CL
+China,Pequim,Ásia,CN
+Colômbia,Bogotá,América do Sul,CO
+Comores,Moroni,África,KM
+Congo,Brazzaville,África,CG
+Costa Rica,San José,América do Norte,CR
+Croácia,Zagreb,Europa,HR
+Cuba,Havana,América do Norte,CU
+Chipre,Nicósia,Europa,CY
+Chéquia,Praga,Europa,CZ
+República Democrática do Congo,Kinshasa,África,CD
+Dinamarca,Copenhague,Europa,DK
+Djibuti,Djibuti,África,DJ
+Dominica,Roseau,América do Norte,DM
+República Dominicana,Santo Domingo,América do Norte,DO
+Equador,Quito,América do Sul,EC
+Egito,Cairo,África,EG
+El Salvador,San Salvador,América do Norte,SV
+Guiné Equatorial,Malabo,África,GQ
+Eritreia,Asmara,África,ER
+Estônia,Tallinn,Europa,EE
+Eswatini,Mbabane,África,SZ
+Etiópia,Adis Abeba,África,ET
+Fiji,Suva,Oceania,FJ
+Finlândia,Helsinque,Europa,FI
+França,Paris,Europa,FR
+Gabão,Libreville,África,GA
+Gâmbia,Banjul,África,GM
+Geórgia,Tbilisi,Ásia,GE
+Alemanha,Berlim,Europa,DE
+Gana,Acra,África,GH
+Grécia,Atenas,Europa,GR
+Granada,Saint George's,América do Norte,GD
+Guatemala,Cidade da Guatemala,América do Norte,GT
+Guiné,Conacri,África,GN
+Guiné-Bissau,Bissau,África,GW
+Guiana,Georgetown,América do Sul,GY
+Haiti,Porto Príncipe,América do Norte,HT
+Honduras,Tegucigalpa,América do Norte,HN
+Hungria,Budapeste,Europa,HU
+Islândia,Reiquiavique,Europa,IS
+Índia,Nova Deli,Ásia,IN
+Indonésia,Jacarta,Ásia,ID
+Irã,Teerã,Ásia,IR
+Iraque,Bagdá,Ásia,IQ
+Irlanda,Dublin,Europa,IE
+Israel,Jerusalém,Ásia,IL
+Itália,Roma,Europa,IT
+Costa do Marfim,Yamoussoukro,África,CI
+Jamaica,Kingston,América do Norte,JM
+Japão,Tóquio,Ásia,JP
+Jordânia,Amã,Ásia,JO
+Cazaquistão,Astana,Ásia,KZ
+Quênia,Nairóbi,África,KE
+Kiribati,Tarawa,Oceania,KI
+Kosovo,Pristina,Europa,XK
+Kuwait,Cidade do Kuwait,Ásia,KW
+Quirguistão,Bisqueque,Ásia,KG
+Laos,Vientiane,Ásia,LA
+Letônia,Riga,Europa,LV
+Líbano,Beirute,Ásia,LB
+Lesoto,Maseru,África,LS
+Libéria,Monróvia,África,LR
+Líbia,Trípoli,África,LY
+Liechtenstein,Vaduz,Europa,LI
+Lituânia,Vilnius,Europa,LT
+Luxemburgo,Luxemburgo,Europa,LU
+Madagascar,Antananarivo,África,MG
+Malawi,Lilongwe,África,MW
+Malásia,Kuala Lumpur,Ásia,MY
+Maldivas,Malé,Ásia,MV
+Mali,Bamako,África,ML
+Malta,Valeta,Europa,MT
+Ilhas Marshall,Majuro,Oceania,MH
+Mauritânia,Nouakchott,África,MR
+Maurício,Port Louis,África,MU
+México,Cidade do México,América do Norte,MX
+Micronésia,Palikir,Oceania,FM
+Moldávia,Chisinau,Europa,MD
+Mônaco,Mônaco,Europa,MC
+Mongólia,Ulan Bator,Ásia,MN
+Montenegro,Podgorica,Europa,ME
+Marrocos,Rabat,África,MA
+Moçambique,Maputo,África,MZ
+Mianmar,Naypyidaw,Ásia,MM
+Namíbia,Windhoek,África,NA
+Nauru,Yaren,Oceania,NR
+Nepal,Katmandu,Ásia,NP
+Países Baixos,Amsterdã,Europa,NL
+Nova Zelândia,Wellington,Oceania,NZ
+Nicarágua,Manágua,América do Norte,NI
+Níger,Niamey,África,NE
+Nigéria,Abuja,África,NG
+Coreia do Norte,Pyongyang,Ásia,KP
+Macedônia do Norte,Escópia,Europa,MK
+Noruega,Oslo,Europa,NO
+Omã,Mascate,Ásia,OM
+Paquistão,Islamabad,Ásia,PK
+Palau,Ngerulmud,Oceania,PW
+Palestina,Jerusalém,Ásia,PS
+Panamá,Cidade do Panamá,América do Norte,PA
+Papua-Nova Guiné,Port Moresby,Oceania,PG
+Paraguai,Assunção,América do Sul,PY
+Peru,Lima,América do Sul,PE
+Filipinas,Manila,Ásia,PH
+Polônia,Varsóvia,Europa,PL
+Portugal,Lisboa,Europa,PT
+Catar,Doha,Ásia,QA
+Romênia,Bucareste,Europa,RO
+Rússia,Moscou,Europa,RU
+Ruanda,Kigali,África,RW
+São Cristóvão e Neves,Basseterre,América do Norte,KN
+Santa Lúcia,Castries,América do Norte,LC
+São Vicente e Granadinas,Kingstown,América do Norte,VC
+Samoa,Apia,Oceania,WS
+San Marino,San Marino,Europa,SM
+São Tomé e Príncipe,São Tomé,África,ST
+Arábia Saudita,Riad,Ásia,SA
+Senegal,Dacar,África,SN
+Sérvia,Belgrado,Europa,RS
+Seychelles,Victoria,África,SC
+Serra Leoa,Freetown,África,SL
+Singapura,Singapura,Ásia,SG
+Eslováquia,Bratislava,Europa,SK
+Eslovênia,Liubliana,Europa,SI
+Ilhas Salomão,Honiara,Oceania,SB
+Somália,Mogadíscio,África,SO
+África do Sul,Pretória,África,ZA
+Coreia do Sul,Seul,Ásia,KR
+Sudão do Sul,Juba,África,SS
+Espanha,Madri,Europa,ES
+Sri Lanka,Sri Jayawardenepura Kotte,Ásia,LK
+Sudão,Cartum,África,SD
+Suriname,Paramaribo,América do Sul,SR
+Suécia,Estocolmo,Europa,SE
+Suíça,Berna,Europa,CH
+Síria,Damasco,Ásia,SY
+Taiwan,Taipei,Ásia,TW
+Tajiquistão,Duchambe,Ásia,TJ
+Tanzânia,Dodoma,África,TZ
+Tailândia,Bangcoc,Ásia,TH
+Timor-Leste,Díli,Ásia,TL
+Togo,Lomé,África,TG
+Tonga,Nucualofa,Oceania,TO
+Trinidad e Tobago,Porto de Espanha,América do Norte,TT
+Tunísia,Túnis,África,TN
+Turquia,Ancara,Ásia,TR
+Turcomenistão,Asgabate,Ásia,TM
+Tuvalu,Funafuti,Oceania,TV
+Uganda,Kampala,África,UG
+Ucrânia,Kiev,Europa,UA
+Emirados Árabes Unidos,Abu Dhabi,Ásia,AE
+Reino Unido,Londres,Europa,GB
+Estados Unidos,Washington, D.C.,América do Norte,US
+Uruguai,Montevidéu,América do Sul,UY
+Uzbequistão,Tashkent,Ásia,UZ
+Vanuatu,Port Vila,Oceania,VU
+Cidade do Vaticano,Cidade do Vaticano,Europa,VA
+Venezuela,Caracas,América do Sul,VE
+Vietnã,Hanói,Ásia,VN
+Iêmen,Sana,Ásia,YE
+Zâmbia,Lusaka,África,ZM
+Zimbábue,Harare,África,ZW

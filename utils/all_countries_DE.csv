@@ -1,0 +1,199 @@
+# Diese Datei enthält eine Liste aller Länder mit ihren Hauptstädten, Kontinenten und ISO-Codes, einschließlich Taiwan und Kosovo, aber nicht Kurdistan oder Neukaledonien.
+# Format: Name,Hauptstadt,Kontinent,ISO-Code
+Afghanistan,Kabul,Asien,AF
+Albanien,Tirana,Europa,AL
+Algerien,Algier,Afrika,DZ
+Andorra,Andorra la Vella,Europa,AD
+Angola,Luanda,Afrika,AO
+Antigua und Barbuda,Saint John’s,Nordamerika,AG
+Argentinien,Buenos Aires,Südamerika,AR
+Armenien,Jerewan,Asien,AM
+Australien,Canberra,Ozeanien,AU
+Österreich,Wien,Europa,AT
+Aserbaidschan,Baku,Asien,AZ
+Bahamas,Nassau,Nordamerika,BS
+Bahrain,Manama,Asien,BH
+Bangladesch,Dhaka,Asien,BD
+Barbados,Bridgetown,Nordamerika,BB
+Belarus,Minsk,Europa,BY
+Belgien,Brüssel,Europa,BE
+Belize,Belmopan,Nordamerika,BZ
+Benin,Porto-Novo,Afrika,BJ
+Bhutan,Thimphu,Asien,BT
+Bolivien,Sucre,Südamerika,BO
+Bosnien und Herzegowina,Sarajevo,Europa,BA
+Botsuana,Gaborone,Afrika,BW
+Brasilien,Brasília,Südamerika,BR
+Brunei,Bandar Seri Begawan,Asien,BN
+Bulgarien,Sofia,Europa,BG
+Burkina Faso,Ouagadougou,Afrika,BF
+Burundi,Gitega,Afrika,BI
+Cabo Verde,Praia,Afrika,CV
+Kambodscha,Phnom Penh,Asien,KH
+Kamerun,Yaoundé,Afrika,CM
+Kanada,Ottawa,Nordamerika,CA
+Zentralafrikanische Republik,Bangui,Afrika,CF
+Tschad,N’Djamena,Afrika,TD
+Chile,Santiago,Südamerika,CL
+China,Peking,Asien,CN
+Kolumbien,Bogotá,Südamerika,CO
+Komoren,Moroni,Afrika,KM
+Kongo,Brazzaville,Afrika,CG
+Costa Rica,San José,Nordamerika,CR
+Kroatien,Zagreb,Europa,HR
+Kuba,Havanna,Nordamerika,CU
+Zypern,Nikosia,Europa,CY
+Tschechien,Prag,Europa,CZ
+Demokratische Republik Kongo,Kinshasa,Afrika,CD
+Dänemark,Kopenhagen,Europa,DK
+Dschibuti,Dschibuti,Afrika,DJ
+Dominica,Roseau,Nordamerika,DM
+Dominikanische Republik,Santo Domingo,Nordamerika,DO
+Ecuador,Quito,Südamerika,EC
+Ägypten,Kairo,Afrika,EG
+El Salvador,San Salvador,Nordamerika,SV
+Äquatorialguinea,Malabo,Afrika,GQ
+Eritrea,Asmara,Afrika,ER
+Estland,Tallinn,Europa,EE
+Eswatini,Mbabane,Afrika,SZ
+Äthiopien,Addis Abeba,Afrika,ET
+Fidschi,Suva,Ozeanien,FJ
+Finnland,Helsinki,Europa,FI
+Frankreich,Paris,Europa,FR
+Gabun,Libreville,Afrika,GA
+Gambia,Banjul,Afrika,GM
+Georgien,Tiflis,Asien,GE
+Deutschland,Berlin,Europa,DE
+Ghana,Accra,Afrika,GH
+Griechenland,Athen,Europa,GR
+Grenada,St. George’s,Nordamerika,GD
+Guatemala,Guatemala-Stadt,Nordamerika,GT
+Guinea,Conakry,Afrika,GN
+Guinea-Bissau,Bissau,Afrika,GW
+Guyana,Georgetown,Südamerika,GY
+Haiti,Port-au-Prince,Nordamerika,HT
+Honduras,Tegucigalpa,Nordamerika,HN
+Ungarn,Budapest,Europa,HU
+Island,Reykjavík,Europa,IS
+Indien,Neu-Delhi,Asien,IN
+Indonesien,Jakarta,Asien,ID
+Iran,Teheran,Asien,IR
+Irak,Bagdad,Asien,IQ
+Irland,Dublin,Europa,IE
+Israel,Jerusalem,Asien,IL
+Italien,Rom,Europa,IT
+Elfenbeinküste,Yamoussoukro,Afrika,CI
+Jamaika,Kingston,Nordamerika,JM
+Japan,Tokio,Asien,JP
+Jordanien,Amman,Asien,JO
+Kasachstan,Astana,Asien,KZ
+Kenia,Nairobi,Afrika,KE
+Kiribati,Tarawa,Ozeanien,KI
+Kosovo,Pristina,Europa,XK
+Kuwait,Kuwait-Stadt,Asien,KW
+Kirgisistan,Bischkek,Asien,KG
+Laos,Vientiane,Asien,LA
+Lettland,Riga,Europa,LV
+Libanon,Beirut,Asien,LB
+Lesotho,Maseru,Afrika,LS
+Liberia,Monrovia,Afrika,LR
+Libyen,Tripolis,Afrika,LY
+Liechtenstein,Vaduz,Europa,LI
+Litauen,Vilnius,Europa,LT
+Luxemburg,Luxemburg,Europa,LU
+Madagaskar,Antananarivo,Afrika,MG
+Malawi,Lilongwe,Afrika,MW
+Malaysia,Kuala Lumpur,Asien,MY
+Malediven,Malé,Asien,MV
+Mali,Bamako,Afrika,ML
+Malta,Valletta,Europa,MT
+Marshallinseln,Majuro,Ozeanien,MH
+Mauretanien,Nouakchott,Afrika,MR
+Mauritius,Port Louis,Afrika,MU
+Mexiko,Mexiko-Stadt,Nordamerika,MX
+Mikronesien,Palikir,Ozeanien,FM
+Moldau,Chișinău,Europa,MD
+Monaco,Monaco,Europa,MC
+Mongolei,Ulaanbaatar,Asien,MN
+Montenegro,Podgorica,Europa,ME
+Marokko,Rabat,Afrika,MA
+Mosambik,Maputo,Afrika,MZ
+Myanmar,Naypyidaw,Asien,MM
+Namibia,Windhoek,Afrika,NA
+Nauru,Yaren,Ozeanien,NR
+Nepal,Kathmandu,Asien,NP
+Niederlande,Amsterdam,Europa,NL
+Neuseeland,Wellington,Ozeanien,NZ
+Nicaragua,Managua,Nordamerika,NI
+Niger,Niamey,Afrika,NE
+Nigeria,Abuja,Afrika,NG
+Nordkorea,Pjöngjang,Asien,KP
+Nordmazedonien,Skopje,Europa,MK
+Norwegen,Oslo,Europa,NO
+Oman,Maskat,Asien,OM
+Pakistan,Islamabad,Asien,PK
+Palau,Ngerulmud,Ozeanien,PW
+Palästina,Jerusalem,Asien,PS
+Panama,Panama-Stadt,Nordamerika,PA
+Papua-Neuguinea,Port Moresby,Ozeanien,PG
+Paraguay,Asunción,Südamerika,PY
+Peru,Lima,Südamerika,PE
+Philippinen,Manila,Asien,PH
+Polen,Warschau,Europa,PL
+Portugal,Lissabon,Europa,PT
+Katar,Doha,Asien,QA
+Rumänien,Bukarest,Europa,RO
+Russland,Moskau,Europa,RU
+Ruanda,Kigali,Afrika,RW
+St. Kitts und Nevis,Basseterre,Nordamerika,KN
+St. Lucia,Castries,Nordamerika,LC
+St. Vincent und die Grenadinen,Kingstown,Nordamerika,VC
+Samoa,Apia,Ozeanien,WS
+San Marino,San Marino,Europa,SM
+São Tomé und Príncipe,São Tomé,Afrika,ST
+Saudi-Arabien,Riad,Asien,SA
+Senegal,Dakar,Afrika,SN
+Serbien,Belgrad,Europa,RS
+Seychellen,Victoria,Afrika,SC
+Sierra Leone,Freetown,Afrika,SL
+Singapur,Singapur,Asien,SG
+Slowakei,Bratislava,Europa,SK
+Slowenien,Ljubljana,Europa,SI
+Salomonen,Honiara,Ozeanien,SB
+Somalia,Mogadischu,Afrika,SO
+Südafrika,Pretoria,Afrika,ZA
+Südkorea,Seoul,Asien,KR
+Südsudan,Juba,Afrika,SS
+Spanien,Madrid,Europa,ES
+Sri Lanka,Sri Jayawardenepura Kotte,Asien,LK
+Sudan,Khartum,Afrika,SD
+Suriname,Paramaribo,Südamerika,SR
+Schweden,Stockholm,Europa,SE
+Schweiz,Bern,Europa,CH
+Syrien,Damaskus,Asien,SY
+Taiwan,Taipeh,Asien,TW
+Tadschikistan,Duschanbe,Asien,TJ
+Tansania,Dodoma,Afrika,TZ
+Thailand,Bangkok,Asien,TH
+Timor-Leste,Dili,Asien,TL
+Togo,Lomé,Afrika,TG
+Tonga,Nuku’alofa,Ozeanien,TO
+Trinidad und Tobago,Port of Spain,Nordamerika,TT
+Tunesien,Tunis,Afrika,TN
+Türkei,Ankara,Asien,TR
+Turkmenistan,Aşgabat,Asien,TM
+Tuvalu,Funafuti,Ozeanien,TV
+Uganda,Kampala,Afrika,UG
+Ukraine,Kiew,Europa,UA
+Vereinigte Arabische Emirate,Abu Dhabi,Asien,AE
+Vereinigtes Königreich,London,Europa,GB
+Vereinigte Staaten,Washington, D.C.,Nordamerika,US
+Uruguay,Montevideo,Südamerika,UY
+Usbekistan,Taschkent,Asien,UZ
+Vanuatu,Port Vila,Ozeanien,VU
+Vatikanstadt,Vatikanstadt,Europa,VA
+Venezuela,Caracas,Südamerika,VE
+Vietnam,Hanoi,Asien,VN
+Jemen,Sanaa,Asien,YE
+Sambia,Lusaka,Afrika,ZM
+Simbabwe,Harare,Afrika,ZW
