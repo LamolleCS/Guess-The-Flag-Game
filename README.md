@@ -1,123 +1,126 @@
-# Guess The Flag Game 🎮🏴
+# Guess The Flag Game
 
-Un divertido juego de adivinanza de banderas desarrollado en Python con Pygame. ¡Pon a prueba tus conocimientos de geografía mundial!
+A geography quiz game built with Python and Pygame featuring flag identification and capital city challenges. The game supports multiple languages and includes comprehensive scoring with retry rounds for missed countries.
 
-## 🎯 Características
+## Features
 
-- **Interfaz gráfica intuitiva** con múltiples pantallas (menú, juego, configuraciones)
-- **Sistema de música** con tracks diferentes para menú y juego
-- **Soporte multiidioma** (español, inglés, alemán, italiano, portugués)
-- **Control de volumen** y función de silencio (Ctrl+Q)
-- **Base de datos extensa** de países y banderas
-- **Diseño responsive** y experiencia de usuario fluida
+- **Two Game Modes**
+  - Flag identification: See a flag, type the country name
+  - Capital cities: Two sub-modes for country ⟷ capital association
+- **Region Selection**: Play globally or filter by continent (Africa, Asia, Europe, etc.)
+- **Multilingual Support**: Spanish (Uruguay), English, Portuguese, German, and Italian
+- **Smart Input Matching**: Accepts abbreviations, alternative names, and handles diacritics
+- **Progress Persistence**: Resume incomplete games with automatic save states
+- **Retry System**: Failed countries get a second round automatically
+- **Audio System**: Background music with menu/game tracks and volume controls
+- **Responsive Design**: Adapts to different screen resolutions
 
-## 🚀 Instalación
+## Game Mechanics
 
-### Prerrequisitos
-- Python 3.7 o superior
-- pip (gestor de paquetes de Python)
+### Scoring & Progress
+- Real-time scoring with chronometer
+- Failed countries are collected for retry rounds
+- Progress is automatically saved and can be resumed
+- Multiple continent-specific progress tracking
 
-### Pasos de instalación
+### Input System
+- Auto-completion detection (no need to press Enter)
+- Ctrl+A for select all
+- Handles country name variations and abbreviations
+- Supports special characters and accented letters
 
-1. **Clona el repositorio:**
-   ```bash
-   git clone https://github.com/TU_USUARIO/Guess-The-Flag-Game.git
-   cd Guess-The-Flag-Game
-   ```
+### Audio Controls
+- Ctrl+Q: Quick mute/unmute toggle
+- Automatic music switching between menu and gameplay
+- Configurable volume settings
 
-2. **Instala las dependencias:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+## Installation
 
-3. **Ejecuta el juego:**
-   ```bash
-   python main.py
-   ```
+### Requirements
+- Python 3.7+
+- Pygame 2.5.0+
 
-## 🎮 Cómo jugar
-
-1. **Inicia el juego** ejecutando `python main.py`
-2. **Navega** por el menú principal usando el mouse
-3. **Configura** el idioma y volumen en la pantalla de configuraciones
-4. **Comienza** una nueva partida y adivina las banderas que aparecen
-5. **Controles de audio:** Usa Ctrl+Q para silenciar/activar la música
-
-## 📁 Estructura del proyecto
-
-```
-Guess-The-Flag-Game/
-│
-├── main.py                 # Archivo principal del juego
-├── requirements.txt        # Dependencias del proyecto
-├── README.md              # Documentación
-├── .gitignore            # Archivos ignorados por Git
-│
-├── assets/               # Recursos multimedia
-│   ├── flags/           # Imágenes de banderas
-│   └── music/           # Archivos de audio (opcional)
-│
-├── screens/             # Pantallas del juego
-│   ├── menu.py         # Pantalla del menú principal
-│   ├── game.py         # Pantalla del juego
-│   └── settings.py     # Pantalla de configuraciones
-│
-└── utils/              # Utilidades y helpers
-    ├── constants.py    # Constantes del juego
-    ├── data.py        # Manejo de datos
-    ├── flag_manager.py # Gestión de banderas
-    ├── fonts.py       # Manejo de fuentes
-    ├── i18n.py        # Internacionalización
-    ├── text_utils.py  # Utilidades de texto
-    ├── ui.py          # Componentes de interfaz
-    └── *.csv          # Datos de países en diferentes idiomas
+### Setup
+```bash
+git clone https://github.com/LamolleCS/Guess-The-Flag-Game.git
+cd Guess-The-Flag-Game
+pip install -r requirements.txt
+python main.py
 ```
 
-## 🛠️ Tecnologías utilizadas
+## Project Structure
 
-- **Python 3.x**
-- **Pygame** - Motor de juego y gráficos
-- **CSV** - Almacenamiento de datos de países
+```
+├── main.py                    # Entry point with Game class and audio management
+├── screens/
+│   ├── menu.py               # Main menu and settings navigation
+│   ├── game.py               # Core game logic and UI rendering
+│   └── settings.py           # Language and audio configuration
+├── utils/
+│   ├── constants.py          # Game constants and color definitions
+│   ├── data.py               # Country data structures and continent mapping
+│   ├── flag_manager.py       # Flag image loading and caching
+│   ├── i18n.py               # Internationalization system
+│   ├── text_utils.py         # String matching algorithms
+│   ├── ui.py                 # Button and UI components
+│   ├── fonts.py              # Font management
+│   └── all_countries*.csv    # Country/capital data in multiple languages
+└── assets/
+    ├── flags/                # Country flag images (PNG format)
+    └── music/                # Background music files (optional)
+```
 
-## 🌍 Idiomas soportados
+## Technical Implementation
 
-- 🇪🇸 Español
-- 🇺🇸 Inglés
-- 🇩🇪 Alemán
-- 🇮🇹 Italiano
-- 🇵🇹 Portugués
+### Flag Management
+- Lazy loading with memory caching for flag images
+- Dynamic scaling for different screen resolutions
+- Efficient flag-to-country mapping system
 
-## 🎵 Audio
+### Data Handling
+- CSV-based country database with language-specific variants
+- Continent categorization with dynamic filtering
+- Support for country name aliases and abbreviations
 
-El juego incluye soporte para música de fondo:
-- Música de menú diferente a la de juego
-- Control de volumen integrado
-- Función de silencio rápido (Ctrl+Q)
+### Internationalization
+- Template-based translation system (`tr()` function)
+- Dynamic text rendering with proper encoding
+- Language-specific country name handling
 
-## 🤝 Contribuir
+### Performance Features
+- Surface caching for rendered text to reduce CPU usage
+- Optimized country selection using swap-pop algorithm
+- Clip-based input field rendering for long text
 
-¡Las contribuciones son bienvenidas! Por favor:
+## Supported Languages
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+The game includes complete translations and country name databases for:
+- **Español (Uruguay)** - Default language
+- **English** - Full localization
+- **Português** - Complete translation
+- **Deutsch** - German language support  
+- **Italiano** - Italian localization
 
-## 📝 Licencia
+## Contributing
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+Contributions are welcome. Areas of interest:
+- Additional flag assets
+- New language translations
+- Performance optimizations
+- UI/UX improvements
 
-## 👨‍💻 Autor
+## Development
 
-- **Tu Nombre** - [Tu GitHub](https://github.com/TU_USUARIO)
+### Key Classes
+- `Game`: Main application controller with audio management
+- `GameScreen`: Core gameplay logic and UI rendering
+- `FlagManager`: Flag image handling and caching
+- `Country`: Data structure for country information
 
-## 🙏 Agradecimientos
-
-- Pygame community por la excelente documentación
-- Contribuidores de banderas y datos de países
-- Comunidad open source por las herramientas utilizadas
+### Debug Features
+- F3: Toggle debug overlay showing FPS and cache statistics
+- Built-in progress tracking with persistent state management
 
 ---
 
-¡Diviértete jugando y aprendiendo geografía! 🌍🎯
+Built with Python 3.x and Pygame. Supports Windows, macOS, and Linux.
