@@ -1,26 +1,41 @@
+"""Gestión de imágenes de banderas.
+
+Administra la carga, descarga y escalado de banderas con caché
+para optimizar rendimiento y evitar trabajo repetido.
+"""
 import os
-import pygame
 import urllib.request
-from typing import Dict, Tuple, Optional
+from typing import Dict, Optional, Tuple
+
+import pygame
+
 import utils.data as data_module
 
 
 class FlagManager:
-    """Administra la carga, descarga y escalado de banderas con caché.
-
-    - Descarga imágenes si no están presentes localmente.
-    - Cachea superficies originales y escaladas para evitar trabajo repetido.
-    - Provee un placeholder si la bandera no está disponible.
+    """Administra la carga, descarga y escalado de banderas.
+    
+    Características:
+    - Descarga imágenes automáticamente si no están presentes
+    - Caché de superficies originales y escaladas
+    - Placeholder para banderas no disponibles
+    - Control de memoria con límites de caché
     """
 
     def __init__(self) -> None:
+        """Inicializa el gestor de banderas."""
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
         repo_root_candidate = os.path.abspath(os.path.join(base_dir, '..', 'assets', 'flags'))
         internal_candidate = os.path.join(base_dir, 'assets', 'flags')
-        self.flags_dir: str = repo_root_candidate if os.path.isdir(repo_root_candidate) else internal_candidate
+        
+        self.flags_dir: str = (
+            repo_root_candidate if os.path.isdir(repo_root_candidate) 
+            else internal_candidate
+        )
         self.flags_cache: Dict[str, pygame.Surface] = {}
         self.scaled_cache: Dict[Tuple[str, int, int], pygame.Surface] = {}
         self.placeholder: Optional[pygame.Surface] = None
+        
         self._ensure_flags_directory()
 
     def _ensure_flags_directory(self) -> None:
@@ -28,12 +43,17 @@ class FlagManager:
             os.makedirs(self.flags_dir, exist_ok=True)
 
     def clear_cache(self) -> None:
+        """Limpia completamente ambos caches de banderas."""
         self.flags_cache.clear()
         self.scaled_cache.clear()
 
     def trim_caches(self, max_flags: int = 300, max_scaled: int = 800) -> None:
-        """Recorta las cachés si exceden un tamaño límite (FIFO simple).
-        No afecta la lógica del juego; sólo control defensivo de memoria."""
+        """Recorta las cachés si exceden el límite (FIFO).
+        
+        Args:
+            max_flags: Máximo de banderas originales en caché.
+            max_scaled: Máximo de banderas escaladas en caché.
+        """
         if len(self.flags_cache) > max_flags:
             # Eliminar los más antiguos según orden de inserción (dict conserva orden)
             exceso = len(self.flags_cache) - max_flags
@@ -44,16 +64,23 @@ class FlagManager:
             for k in list(self.scaled_cache.keys())[:exceso]:
                 del self.scaled_cache[k]
 
-    def stats(self) -> dict:
-        """Devuelve métricas simples de caché para debug overlay."""
+    def stats(self) -> Dict[str, int]:
+        """Devuelve métricas de uso del caché.
+        
+        Returns:
+            Diccionario con cantidades de elementos cacheados.
+        """
         return {
             'flags_cached': len(self.flags_cache),
             'scaled_cached': len(self.scaled_cache),
         }
 
-    def verify_all_flags_present(self) -> dict:
-        """Verifica qué banderas faltan en disco sin descargarlas (si todavía no fueron solicitadas).
-        Retorna dict con listas 'missing' y 'present'."""
+    def verify_all_flags_present(self) -> Dict[str, list]:
+        """Verifica qué banderas están presentes en disco.
+        
+        Returns:
+            Dict con listas 'present' y 'missing'.
+        """
         present, missing = [], []
         for name, country in data_module.COUNTRIES.items():
             iso = country.iso_code.lower()

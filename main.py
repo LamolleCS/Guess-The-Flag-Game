@@ -1,53 +1,118 @@
+"""Punto de entrada principal del juego Adivina la Bandera.
+
+Este módulo contiene la clase Game que gestiona el ciclo principal,
+la navegación entre pantallas y el sistema de audio.
+"""
 import os
 import sys
+from typing import Optional
+
 import pygame
+
 from screens.menu import MenuScreen
 from screens.settings import SettingsScreen
 from screens.game import GameScreen
-from utils.constants import *
+from utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+from utils import sounds
 
 
 class Game:
-    def __init__(self):
+    """Clase principal que gestiona el juego.
+    
+    Responsabilidades:
+    - Inicialización de pygame y la ventana
+    - Ciclo principal del juego
+    - Navegación entre pantallas
+    - Sistema de audio y música
+    
+    Attributes:
+        screen: Superficie principal de renderizado.
+        clock: Reloj para control de FPS.
+        current_screen: Pantalla actualmente activa.
+        running: Flag del ciclo principal.
+    """
+    
+    # Constantes de audio
+    MUSIC_START_OFFSET: float = 60.0  # Offset para música de menú
+    MUSIC_FADE_MS: int = 2000  # Duración del fade en ms
+    
+    def __init__(self) -> None:
+        """Inicializa el juego y sus componentes."""
         pygame.init()
-        try:
-            pygame.mixer.init()
-        except Exception as e:
-            print("[ADVERTENCIA] No se pudo inicializar el mixer de audio:", e)
-        # Icono
-        try:
-            icon_path = os.path.join(os.path.dirname(__file__), "assets", "flags", "uk_icon.png")
-            icon = pygame.image.load(icon_path)
-            pygame.display.set_icon(icon)
-        except Exception as e:
-            print("[ADVERTENCIA] No se pudo cargar el icono de la ventana:", e)
+        self._init_audio()
+        self._set_window_icon()
+        
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Adiviná la Bandera")
+        from utils.i18n import tr
+        pygame.display.set_caption(tr('game.title'))
         self.clock = pygame.time.Clock()
         self.current_screen = MenuScreen(self)
         self.running = True
+        
+        # Estado de pantalla
+        self._is_fullscreen: bool = False
+        self._windowed_size: tuple = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
-        # Volumen y estado
-        self._music_volume = 1.0
-        self._muted = False
-        self._pre_mute_volume = self._music_volume
+        # Estado de audio
+        self._music_volume: float = 0.75
+        self._muted: bool = False
+        self._pre_mute_volume: float = self._music_volume
 
-        # Rutas música
-        self._music_start_offset = 60.0  # offset menú
-        self._music_fade_ms = 2000
+        # Rutas de música
+        self._music_start_offset = self.MUSIC_START_OFFSET
+        self._music_fade_ms = self.MUSIC_FADE_MS
         self._menu_music_path = self._find_menu_music()
         self._game_music_path = self._find_game_music()
-        self._current_music_type = 'menu'
-        self._music_loaded = False
+        self._current_music_type: str = 'menu'
+        self._music_loaded: bool = False
 
-        # Hotkey debug
-        self._debug_last_q = False
+        # Estado de hotkey debug
+        self._debug_last_q: bool = False
 
-        # Cargar y reproducir menú
-        self._load_and_play(self._menu_music_path, start_offset=self._music_start_offset, fade_ms=self._music_fade_ms)
+        # Cargar y reproducir música de menú
+        self._load_and_play(
+            self._menu_music_path, 
+            start_offset=self._music_start_offset, 
+            fade_ms=self._music_fade_ms
+        )
+    
+    def _init_audio(self) -> None:
+        """Inicializa el sistema de audio."""
+        try:
+            pygame.mixer.init()
+            # Inicializar sistema de efectos de sonido
+            sounds.init_sounds()
+        except Exception as e:
+            print(f"[ADVERTENCIA] No se pudo inicializar el mixer: {e}")
 
-    # ---------------- Música -----------------
-    def _load_and_play(self, path, start_offset=0.0, fade_ms=1000):
+    def _set_window_icon(self) -> None:
+        """Establece el icono de la ventana."""
+        try:
+            icon_path = os.path.join(
+                os.path.dirname(__file__), "assets", "flags", "uk_icon.png"
+            )
+            icon = pygame.image.load(icon_path)
+            pygame.display.set_icon(icon)
+        except Exception as e:
+            print(f"[ADVERTENCIA] No se pudo cargar el icono: {e}")
+
+    # =========================================================================
+    # SISTEMA DE MÚSICA
+    # =========================================================================
+    
+    def _load_and_play(
+        self, 
+        path: str, 
+        start_offset: float = 0.0, 
+        fade_ms: int = 1000
+    ) -> None:
+        """Carga y reproduce una pista de música.
+        
+        Args:
+            path: Ruta al archivo de audio.
+            start_offset: Segundos donde comenzar la reproducción.
+            fade_ms: Duración del fade-in en milisegundos.
+        """
         if not os.path.exists(path):
             print(f"[INFO] Música no encontrada: {path}")
             return
@@ -70,37 +135,41 @@ class Game:
         except Exception as e:
             print("[ADVERTENCIA] No se pudo reproducir la pista:", e)
 
-    def play_menu_music(self):
+    def play_menu_music(self) -> None:
+        """Cambia a la música del menú."""
         if self._current_music_type == 'menu':
             return
-        try:
-            pygame.mixer.music.fadeout(400)
-        except Exception:
-            pass
+        self._fadeout_music(400)
         self._current_music_type = 'menu'
-        self._load_and_play(self._menu_music_path, start_offset=self._music_start_offset, fade_ms=self._music_fade_ms)
+        self._load_and_play(
+            self._menu_music_path, 
+            start_offset=self._music_start_offset, 
+            fade_ms=self._music_fade_ms
+        )
 
-    def play_game_music(self):
+    def play_game_music(self) -> None:
+        """Cambia a la música del juego."""
         if self._current_music_type == 'game':
             return
-        try:
-            pygame.mixer.music.fadeout(400)
-        except Exception:
-            pass
+        self._fadeout_music(400)
         self._current_music_type = 'game'
         self._load_and_play(self._game_music_path, start_offset=0.0, fade_ms=1200)
+    
+    def _fadeout_music(self, duration_ms: int) -> None:
+        """Hace fadeout de la música actual."""
+        try:
+            pygame.mixer.music.fadeout(duration_ms)
+        except Exception:
+            pass
 
-    def _find_menu_music(self):
-        """Busca el track de menú (Daft Punk - Around The World) en rutas estándar.
-
-        Orden de búsqueda:
-          1. Juego/assets/music/
-          2. assets/music/ (carpeta raíz del repositorio)
-          3. assets/ (directo en raíz, por si el usuario lo dejó suelto)
-
-        Coincidencia flexible: nombre que contenga 'daft', 'around', 'world'.
-        Extensiones preferidas: .ogg, luego .mp3, luego .wav.
-        Devuelve ruta fallback a Juego/assets/music/menu_theme.ogg si no encuentra coincidencias.
+    def _find_menu_music(self) -> str:
+        """Busca el track de música para el menú.
+        
+        Busca archivos que contengan 'daft', 'around', 'world' en el nombre.
+        Prioriza formatos: .ogg > .mp3 > .wav
+        
+        Returns:
+            Ruta al archivo de música o fallback.
         """
         base_game = os.path.dirname(__file__)  # .../Juego
         repo_root = os.path.abspath(os.path.join(base_game, '..'))
@@ -227,21 +296,47 @@ class Game:
     def run(self):
         while self.running:
             self.clock.tick(FPS)
+            self._handle_global_keys()
             self.current_screen.handle_events()
             self.current_screen.update()
             self.current_screen.draw()
             pygame.display.flip()
-            # Hotkey debug CTRL+Q toggle mute
-            try:
-                mods = pygame.key.get_mods()
-                q_now = pygame.key.get_pressed()[pygame.K_q]
-                if (mods & pygame.KMOD_CTRL) and q_now and not self._debug_last_q:
-                    self.toggle_mute()
-                    estado = 'MUTE' if self._muted else f"UNMUTE (vol={self._music_volume:.2f})"
-                    print(f"[DEBUG] CTRL+Q -> {estado}")
-                self._debug_last_q = q_now
-            except Exception:
-                pass
+    
+    def _handle_global_keys(self):
+        """Maneja teclas globales como F11 y CTRL+SHIFT+M."""
+        try:
+            keys = pygame.key.get_pressed()
+            mods = pygame.key.get_mods()
+            
+            # F11 para toggle fullscreen
+            for event in pygame.event.get(pygame.KEYDOWN):
+                if event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
+                pygame.event.post(event)  # Re-post para que lo procese la pantalla
+            
+            # CTRL+SHIFT+M para toggle mute
+            m_now = keys[pygame.K_m]
+            if (mods & pygame.KMOD_CTRL) and (mods & pygame.KMOD_SHIFT) and m_now and not self._debug_last_q:
+                self.toggle_mute()
+                estado = 'MUTE' if self._muted else f"UNMUTE (vol={self._music_volume:.2f})"
+                print(f"[DEBUG] CTRL+SHIFT+M -> {estado}")
+            self._debug_last_q = m_now
+        except Exception:
+            pass
+    
+    def toggle_fullscreen(self):
+        """Alterna entre modo ventana y pantalla completa."""
+        if self._is_fullscreen:
+            # Volver a ventana
+            self.screen = pygame.display.set_mode(self._windowed_size)
+            self._is_fullscreen = False
+        else:
+            # Ir a fullscreen 1920x1080
+            self.screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
+            self._is_fullscreen = True
+        
+        # Actualizar pantalla actual
+        self.current_screen.screen = self.screen
 
     def change_screen(self, screen_name, **kwargs):
         if screen_name == "menu":

@@ -1,7 +1,36 @@
-import pygame
+"""Pantalla principal del juego.
+
+Implementa la lógica de los modos de juego:
+- Adivinar banderas
+- Adivinar capitales (por país o por capital)
+"""
 import random
-from utils.constants import *
-from utils.ui import Button
+import math
+from typing import Dict, List, Optional, Tuple, Any
+
+import pygame
+
+from utils.constants import (
+    SCREEN_WIDTH, SCREEN_HEIGHT,
+    BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_SPACING,
+    FONT_SIZE, SMALL_FONT_SIZE, FPS,
+    WHITE, BLACK, GRAY, RED, GREEN, BLUE,
+    KEY_REPEAT_DELAY, KEY_REPEAT_INTERVAL,
+    PRIMARY, PRIMARY_LIGHT, SECONDARY, TEXT_PRIMARY, TEXT_SECONDARY,
+    BG_CARD, SUCCESS, ERROR, WARNING,
+    NEON_CYAN, NEON_PINK, NEON_GREEN, NEON_PURPLE
+)
+from utils.ui import (
+    Button, draw_animated_background, draw_rounded_rect, draw_shadow,
+    update_global_time, get_global_time, hsv_to_rgb, draw_neon_glow
+)
+from utils.effects import (
+    get_flag_glow_color, draw_flag_with_glow,
+    trigger_confetti, update_confetti, draw_confetti,
+    trigger_success_flash, trigger_skip_flash,
+    update_screen_flash, draw_screen_flash
+)
+from utils import sounds
 import utils.data as data_module
 from utils.flag_manager import FlagManager
 from utils.text_utils import are_strings_similar
@@ -10,93 +39,167 @@ from utils import fonts
 
 
 class GameScreen:
-    # Almacén persistente en memoria mientras el programa esté activo
-    PERSISTENT_PROGRESS = {}
+    """Pantalla principal del juego de geografía.
+    
+    Implementa:
+    - Selección de región (global/continente)
+    - Selección de modo (banderas/capitales)
+    - Lógica de preguntas y respuestas
+    - Sistema de puntuación y rondas extra
+    - Persistencia de progreso en memoria
+    
+    Attributes:
+        game: Referencia al juego principal.
+        game_mode: Modo actual ('flags' o 'capitals').
+        quiz_type: Tipo de quiz para capitales ('country' o 'capital').
+        score: Puntuación actual.
+        countries_left: Países restantes en la ronda.
+    """
+    # Almacén persistente de progreso (en memoria mientras el programa esté activo)
+    PERSISTENT_PROGRESS: Dict[str, Dict[str, Any]] = {}
 
-    def __init__(self, game):
+    def __init__(self, game) -> None:
+        """Inicializa la pantalla de juego.
+        
+        Args:
+            game: Referencia a la instancia principal del juego.
+        """
         # Referencias básicas
         self.game = game
         self.screen = game.screen
 
-        # Modo / región
-        self.game_mode: str | None = None
-        self.quiz_type: str | None = None
-        self.region_mode: str | None = None
-        self.selected_continent: str | None = None
+        # Estado del juego
+        self.game_mode: Optional[str] = None
+        self.quiz_type: Optional[str] = None
+        self.region_mode: Optional[str] = None
+        self.selected_continent: Optional[str] = None
 
-        # Coordenadas base para botones (valores iniciales; se recalculan en draw responsivo)
+        # Coordenadas base para botones
         center_x = SCREEN_WIDTH // 2 - BUTTON_WIDTH // 2
         start_y = SCREEN_HEIGHT // 2 - BUTTON_HEIGHT - BUTTON_SPACING
 
-        # Botones región
-        self.global_button = Button(center_x, start_y - BUTTON_HEIGHT - BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT, tr('region.global'))
-        self.continent_button = Button(center_x, start_y, BUTTON_WIDTH, BUTTON_HEIGHT, tr('region.by_continent'))
+        # Crear botones de región
+        self._create_region_buttons(center_x, start_y)
+        
+        # Crear botones de continente
+        self._create_continent_buttons(center_x, start_y)
+        
+        # Crear botones de modo
+        self._create_mode_buttons(center_x, start_y)
+        
+        # Botón volver y saltear con estilos modernos
+        self.back_button = Button(20, 20, 100, 40, tr('common.back'), SMALL_FONT_SIZE, style=Button.STYLE_GHOST)
+        self.skip_button = Button(0, 0, 120, 40, tr('common.skip'), SMALL_FONT_SIZE, style=Button.STYLE_SECONDARY)
 
-        # Botones continentes
+        # Configuración de input
+        self._setup_input()
+        
+        # Estado dinámico del juego
+        self._init_game_state()
+        
+        # Fuentes y configuración de teclado
+        self.message_font = fonts.small_font()
+        self.small_font = fonts.small_font()
+        pygame.key.set_repeat(KEY_REPEAT_DELAY, KEY_REPEAT_INTERVAL)
+        
+        # Cachés de renderizado
+        self._init_caches()
+    
+    # =========================================================================
+    # MÉTODOS DE INICIALIZACIÓN
+    # =========================================================================
+    
+    def _create_region_buttons(self, center_x: int, start_y: int) -> None:
+        """Crea los botones de selección de región."""
+        # Crear botones de región con estilos modernos
+        self.global_button = Button(
+            center_x, start_y - BUTTON_HEIGHT - BUTTON_SPACING,
+            BUTTON_WIDTH, BUTTON_HEIGHT, tr('region.global'),
+            style=Button.STYLE_PRIMARY
+        )
+        self.continent_button = Button(
+            center_x, start_y,
+            BUTTON_WIDTH, BUTTON_HEIGHT, tr('region.by_continent'),
+            style=Button.STYLE_SECONDARY
+        )
+    
+    def _create_continent_buttons(self, center_x: int, start_y: int) -> None:
+        """Crea los botones de selección de continente."""
         from utils.data import get_all_continents
-        self.continent_buttons: list[Button] = []
+        self.continent_buttons: List[Button] = []
         self.continents = get_all_continents()
         for i, cont in enumerate(self.continents):
             btn_y = start_y + i * (BUTTON_HEIGHT + BUTTON_SPACING)
-            self.continent_buttons.append(Button(center_x, btn_y, BUTTON_WIDTH, BUTTON_HEIGHT, cont))
-
-        # Botones selección de modo
-        self.flags_button = Button(center_x, start_y, BUTTON_WIDTH, BUTTON_HEIGHT, tr('mode.flags'))
-        self.capitals_button = Button(center_x, start_y + BUTTON_HEIGHT + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT, tr('mode.capitals'))
-
-        # Botón volver
-        self.back_button = Button(20, 20, 100, 40, tr('common.back'), SMALL_FONT_SIZE)
-
-        # Botones sub-modo capitales
-        self.by_country_button = Button(center_x, start_y, BUTTON_WIDTH, BUTTON_HEIGHT, tr('capitals.by_country'))
-        self.by_capital_button = Button(center_x, start_y + BUTTON_HEIGHT + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT, tr('capitals.by_capital'))
-
-        # Saltear
-        self.skip_button = Button(0, 0, 120, 40, tr('common.skip'), SMALL_FONT_SIZE)
-
-        # Input
-        self.input_text = ""
-        self.input_rect = pygame.Rect((SCREEN_WIDTH - 300) // 2, SCREEN_HEIGHT - 100, 300, 40)
-        self.input_active = False
+            self.continent_buttons.append(
+                Button(center_x, btn_y, BUTTON_WIDTH, BUTTON_HEIGHT, cont, style=Button.STYLE_SECONDARY)
+            )
+    
+    def _create_mode_buttons(self, center_x: int, start_y: int) -> None:
+        """Crea los botones de selección de modo."""
+        self.flags_button = Button(
+            center_x, start_y,
+            BUTTON_WIDTH, BUTTON_HEIGHT, tr('mode.flags'),
+            style=Button.STYLE_PRIMARY
+        )
+        self.capitals_button = Button(
+            center_x, start_y + BUTTON_HEIGHT + BUTTON_SPACING,
+            BUTTON_WIDTH, BUTTON_HEIGHT, tr('mode.capitals'),
+            style=Button.STYLE_SECONDARY
+        )
+        self.by_country_button = Button(
+            center_x, start_y,
+            BUTTON_WIDTH, BUTTON_HEIGHT, tr('capitals.by_country'),
+            style=Button.STYLE_PRIMARY
+        )
+        self.by_capital_button = Button(
+            center_x, start_y + BUTTON_HEIGHT + BUTTON_SPACING,
+            BUTTON_WIDTH, BUTTON_HEIGHT, tr('capitals.by_capital'),
+            style=Button.STYLE_SECONDARY
+        )
+    
+    def _setup_input(self) -> None:
+        """Configura el campo de entrada de texto."""
+        self.input_text: str = ""
+        self.input_rect = pygame.Rect(
+            (SCREEN_WIDTH - 300) // 2, SCREEN_HEIGHT - 100, 300, 40
+        )
+        self.input_active: bool = False
         self.font = fonts.main_font()
-        self.input_scroll_offset = 0
-
-        # Estado de juego variables dinámicas
+        self.input_scroll_offset: int = 0
+        self.selection_all: bool = False
+        self._enter_skip_guard: bool = False
+        self._esc_hold_guard: bool = False
+    
+    def _init_game_state(self) -> None:
+        """Inicializa el estado del juego."""
         self.flag_manager = FlagManager()
-        self.current_country: str | None = None
-        self.current_capital: str | None = None
-        self.message = ""
+        self.current_country: Optional[str] = None
+        self.current_capital: Optional[str] = None
+        self.message: str = ""
         self.message_color = BLACK
-        self.message_timer = 0
-        self._message_surface = None  # cache superficie mensaje base
-        self.score = 0
-        self.countries_left: list[str] = []
-        self.total_countries = 0
-        self.failed_countries: list[str] = []
-        self.max_score = 0
-
-        # Selección de texto (CTRL+A)
-        self.selection_all = False
-
-        # Fuentes adicionales y repetición de teclas
-        self.message_font = fonts.small_font()
-        self.small_font = fonts.small_font()
-        pygame.key.set_repeat(320, 25)
-        self._enter_skip_guard = False
-        self._esc_hold_guard = False
-
-        # Cronómetro
-        self.chrono_start = None
-        self.chrono_elapsed = 0
-        self.chrono_running = False
-        self.round_phase = 'full'
-
-        # Caches internos
-        self._render_cache: dict = {}
-        self._highlight_cache: dict = {}
-        self._prompt_cache: dict = {}
-        self._frame_ticks = 0
-        self._debug = False
+        self.message_timer: int = 0
+        self._message_surface: Optional[pygame.Surface] = None
+        self.score: int = 0
+        self.countries_left: List[str] = []
+        self.total_countries: int = 0
+        self.failed_countries: List[str] = []
+        self.max_score: int = 0
+        self.chrono_start: Optional[int] = None
+        self.chrono_elapsed: int = 0
+        self.chrono_running: bool = False
+        self.round_phase: str = 'full'
+    
+    def _init_caches(self) -> None:
+        """Inicializa los cachés de renderizado."""
+        self._render_cache: Dict[Tuple, pygame.Surface] = {}
+        self._highlight_cache: Dict[Tuple[int, int], pygame.Surface] = {}
+        self._prompt_cache: Dict[Tuple[str, str], pygame.Surface] = {}
+        self._frame_ticks: int = 0
+        self._debug: bool = False
+    
+    # =========================================================================
+    # MÉTODOS DE CACHÉ Y RENDERIZADO
+    # =========================================================================
 
     def _render(self, font, text, color=BLACK):
         """Devuelve una superficie de texto cacheada para evitar renderizado repetido.
@@ -121,19 +224,236 @@ class GameScreen:
         return surf
 
     def _get_prompt_surface(self, kind: str, dynamic_value: str):
-        """Cachea superficies de prompts que combinan un valor dinámico (país/capital)."""
+        """Cachea superficies de prompts que combinan un valor dinámico (país/capital).
+        
+        Renderiza una tarjeta elegante con el texto.
+        """
         key = (kind, dynamic_value)
         surf = self._prompt_cache.get(key)
         if surf is None:
             if kind == 'country':
-                text = tr('prompt.country', country=dynamic_value)
+                label = tr('prompt.country_label', country=dynamic_value) if hasattr(tr, '__call__') else "País:"
+                label = "Pais"
+                value = dynamic_value
             elif kind == 'capital':
-                text = tr('prompt.capital', capital=dynamic_value)
+                label = "Capital"
+                value = dynamic_value
             else:
-                text = dynamic_value  # fallback
-            surf = self.font.render(text, True, BLACK)
+                label = ""
+                value = dynamic_value
+            
+            # Fuentes
+            label_font = fonts.registry.get(20)
+            value_font = fonts.registry.get(42)
+            
+            # Renderizar textos
+            label_surf = label_font.render(label, True, TEXT_SECONDARY)
+            value_surf = value_font.render(value, True, TEXT_PRIMARY)
+            
+            # Calcular dimensiones de la tarjeta
+            padding_x = 40
+            padding_y = 20
+            card_width = max(label_surf.get_width(), value_surf.get_width()) + padding_x * 2
+            card_height = label_surf.get_height() + value_surf.get_height() + padding_y * 3
+            
+            # Crear superficie de la tarjeta
+            surf = pygame.Surface((card_width, card_height), pygame.SRCALPHA)
+            
+            # Fondo de la tarjeta con gradiente sutil
+            card_rect = pygame.Rect(0, 0, card_width, card_height)
+            
+            # Fondo oscuro semi-transparente
+            pygame.draw.rect(surf, (25, 25, 50, 220), card_rect, border_radius=16)
+            
+            # Borde con glow
+            pygame.draw.rect(surf, (80, 80, 140), card_rect, 2, border_radius=16)
+            
+            # Línea decorativa superior
+            line_y = padding_y + label_surf.get_height() + 8
+            pygame.draw.line(surf, (60, 60, 100), 
+                           (padding_x // 2, line_y), 
+                           (card_width - padding_x // 2, line_y), 1)
+            
+            # Posicionar textos centrados
+            label_x = (card_width - label_surf.get_width()) // 2
+            value_x = (card_width - value_surf.get_width()) // 2
+            
+            # Dibujar label
+            surf.blit(label_surf, (label_x, padding_y))
+            
+            # Dibujar valor con sombra
+            shadow_color = (20, 20, 40)
+            shadow_surf = value_font.render(value, True, shadow_color)
+            for dx, dy in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
+                surf.blit(shadow_surf, (value_x + dx, line_y + padding_y + dy))
+            surf.blit(value_surf, (value_x, line_y + padding_y))
+            
             self._prompt_cache[key] = surf
         return surf
+
+    def _draw_rgb_rotating_border(self, rect: pygame.Rect, t: float, thickness: int = 2) -> None:
+        """Dibuja un borde RGB que gira uniformemente alrededor del rectángulo.
+        
+        El color fluye continuamente por todo el perímetro como si fuera una serpiente RGB.
+        """
+        # Calcular el perímetro total
+        perimeter = 2 * (rect.width + rect.height)
+        
+        # Velocidad de rotación del gradiente
+        speed = 0.4
+        time_offset = t * speed
+        
+        # Dibujar cada píxel del borde con el color correspondiente
+        # El hue se calcula basado en la posición relativa en el perímetro
+        
+        # Borde superior (izquierda a derecha)
+        for x in range(rect.width):
+            pos_in_perimeter = x
+            hue = (time_offset + pos_in_perimeter / perimeter) % 1.0
+            color = hsv_to_rgb(hue, 1.0, 1.0)
+            for dy in range(thickness):
+                self.screen.set_at((rect.x + x, rect.y + dy), color)
+        
+        # Borde derecho (arriba a abajo)
+        for y in range(rect.height):
+            pos_in_perimeter = rect.width + y
+            hue = (time_offset + pos_in_perimeter / perimeter) % 1.0
+            color = hsv_to_rgb(hue, 1.0, 1.0)
+            for dx in range(thickness):
+                self.screen.set_at((rect.right - 1 - dx, rect.y + y), color)
+        
+        # Borde inferior (derecha a izquierda)
+        for x in range(rect.width):
+            pos_in_perimeter = rect.width + rect.height + x
+            hue = (time_offset + pos_in_perimeter / perimeter) % 1.0
+            color = hsv_to_rgb(hue, 1.0, 1.0)
+            for dy in range(thickness):
+                self.screen.set_at((rect.right - 1 - x, rect.bottom - 1 - dy), color)
+        
+        # Borde izquierdo (abajo a arriba)
+        for y in range(rect.height):
+            pos_in_perimeter = 2 * rect.width + rect.height + y
+            hue = (time_offset + pos_in_perimeter / perimeter) % 1.0
+            color = hsv_to_rgb(hue, 1.0, 1.0)
+            for dx in range(thickness):
+                self.screen.set_at((rect.x + dx, rect.bottom - 1 - y), color)
+
+    def _draw_modern_timer(self, width: int, height: int, t: float) -> None:
+        """Dibuja un cronómetro minimalista y elegante.
+        
+        Args:
+            width: Ancho de la pantalla.
+            height: Alto de la pantalla.
+            t: Tiempo global para animaciones.
+        """
+        mins = self.chrono_elapsed // 60
+        secs = self.chrono_elapsed % 60
+        
+        # Fuente para el timer (más grande)
+        time_font = fonts.registry.get(32)
+        
+        # Formato del tiempo
+        time_str = f"{mins:02d}:{secs:02d}"
+        
+        # Determinar color según tiempo transcurrido (más sutil)
+        if self.chrono_elapsed < 60:
+            text_color = TEXT_SECONDARY
+        elif self.chrono_elapsed < 180:
+            text_color = (200, 200, 150)  # Ligeramente amarillento
+        else:
+            text_color = (200, 150, 150)  # Ligeramente rojizo
+        
+        # Renderizar tiempo
+        time_surf = time_font.render(time_str, True, text_color)
+        time_rect = time_surf.get_rect(center=(width // 2, 35))
+        
+        # Fondo pill semi-transparente
+        padding_x = 20
+        padding_y = 10
+        pill_rect = time_rect.inflate(padding_x * 2, padding_y * 2)
+        
+        pill_surf = pygame.Surface((pill_rect.width, pill_rect.height), pygame.SRCALPHA)
+        pygame.draw.rect(pill_surf, (20, 20, 35, 150), 
+                        pygame.Rect(0, 0, pill_rect.width, pill_rect.height), 
+                        border_radius=pill_rect.height // 2)
+        pygame.draw.rect(pill_surf, (60, 60, 80, 100), 
+                        pygame.Rect(0, 0, pill_rect.width, pill_rect.height), 
+                        1, border_radius=pill_rect.height // 2)
+        
+        self.screen.blit(pill_surf, pill_rect.topleft)
+        self.screen.blit(time_surf, time_rect)
+
+    def _draw_modern_score(self, width: int, height: int, t: float) -> None:
+        """Dibuja el puntaje con diseño moderno en la esquina superior derecha.
+        
+        Args:
+            width: Ancho de la pantalla.
+            height: Alto de la pantalla.
+            t: Tiempo global para animaciones.
+        """
+        # Fuentes (más grandes)
+        label_font = fonts.registry.get(16)
+        score_font = fonts.registry.get(32)
+        
+        # Calcular porcentaje de progreso
+        progress = self.score / max(1, self.total_countries)
+        
+        # Dimensiones de la tarjeta (más grande)
+        card_width = 170
+        card_height = 70
+        card_x = width - card_width - 20  # Esquina superior derecha
+        card_y = 15
+        card_rect = pygame.Rect(card_x, card_y, card_width, card_height)
+        
+        # Color de acento basado en progreso
+        if progress >= 1.0:
+            accent_color = NEON_GREEN
+        elif progress >= 0.7:
+            accent_color = NEON_CYAN
+        elif progress >= 0.4:
+            accent_color = (255, 200, 50)  # Amarillo
+        else:
+            accent_color = NEON_PURPLE
+        
+        # Fondo de la tarjeta semi-transparente
+        card_surf = pygame.Surface((card_width, card_height), pygame.SRCALPHA)
+        pygame.draw.rect(card_surf, (20, 20, 40, 180), 
+                        pygame.Rect(0, 0, card_width, card_height), border_radius=10)
+        
+        # Borde sutil
+        pygame.draw.rect(card_surf, (60, 60, 90, 150), 
+                        pygame.Rect(0, 0, card_width, card_height), 1, border_radius=10)
+        
+        self.screen.blit(card_surf, card_rect.topleft)
+        
+        # Etiqueta "Puntaje"
+        label_text = tr('label.score')
+        label_surf = label_font.render(label_text, True, TEXT_SECONDARY)
+        label_rect = label_surf.get_rect(midtop=(card_rect.centerx, card_rect.y + 5))
+        self.screen.blit(label_surf, label_rect)
+        
+        # Puntaje principal
+        score_str = f"{self.score}/{self.total_countries}"
+        score_surf = score_font.render(score_str, True, accent_color)
+        score_rect = score_surf.get_rect(center=(card_rect.centerx, card_rect.centery + 2))
+        self.screen.blit(score_surf, score_rect)
+        
+        # Barra de progreso
+        bar_width = card_width - 16
+        bar_height = 5
+        bar_x = card_rect.x + 8
+        bar_y = card_rect.bottom - 10
+        
+        # Fondo de la barra
+        pygame.draw.rect(self.screen, (30, 30, 50), 
+                        pygame.Rect(bar_x, bar_y, bar_width, bar_height), border_radius=2)
+        
+        # Progreso
+        if progress > 0:
+            filled_width = int(bar_width * progress)
+            if filled_width > 0:
+                pygame.draw.rect(self.screen, accent_color, 
+                               pygame.Rect(bar_x, bar_y, filled_width, bar_height), border_radius=2)
 
     def navigate_back(self):
         """
@@ -369,6 +689,9 @@ class GameScreen:
                 if self.skip_button.handle_event(event):
                     if self.current_country:
                         self.failed_countries.append(self.current_country)
+                        # Efecto visual y sonido de skip
+                        trigger_skip_flash()
+                        sounds.play_skip()
                         # Mensaje detallado según modo
                         if self.game_mode == 'flags':
                             msg = tr('msg.skipped_flag', country=self.current_country)
@@ -400,6 +723,9 @@ class GameScreen:
                         if not self._enter_skip_guard and self.current_country:
                             self._enter_skip_guard = True
                             self.failed_countries.append(self.current_country)
+                            # Efecto visual y sonido de skip
+                            trigger_skip_flash()
+                            sounds.play_skip()
                             if self.game_mode == 'flags':
                                 msg = tr('msg.skipped_flag', country=self.current_country)
                             elif self.game_mode == 'capitals':
@@ -529,6 +855,8 @@ class GameScreen:
         if color == GREEN:
             self.message_timer = 48   # ~0.8s a 60 FPS
             self.message_fade_cutoff = 0.3  # Fade solo en el último 30% (desaparece rápido)
+            # ¡Disparar confetti de celebración!
+            trigger_confetti(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3, 50)
         elif color == RED:
             self.message_timer = 180  # 3s
             self.message_fade_cutoff = 0.25
@@ -548,9 +876,12 @@ class GameScreen:
                 if correct:
                     self.score += 1
                     self._save_progress()
+                    trigger_success_flash()  # Efecto verde sutil
+                    sounds.play_success()
                     self.show_message(tr('msg.correct'), GREEN)
                 else:
                     self.failed_countries.append(self.current_country)
+                    sounds.play_error()
                     self.show_message(tr('msg.wrong_capital', answer=country_obj.capital), RED)
                 self.select_new_country()
             elif self.quiz_type == "capital":
@@ -558,9 +889,12 @@ class GameScreen:
                 if correct:
                     self.score += 1
                     self._save_progress()
+                    trigger_success_flash()  # Efecto verde sutil
+                    sounds.play_success()
                     self.show_message(tr('msg.correct'), GREEN)
                 else:
                     self.failed_countries.append(self.current_country)
+                    sounds.play_error()
                     abbrs = country_obj.abbreviations
                     msg = tr('msg.wrong_country', answer=self.current_country)
                     if abbrs:
@@ -571,6 +905,8 @@ class GameScreen:
             if country_obj.check_name_match(user_input):
                 self.score += 1
                 self._save_progress()
+                trigger_success_flash()  # Efecto verde sutil
+                sounds.play_success()
                 user_input_lower = user_input.lower()
                 if user_input_lower in [abbr.lower() for abbr in country_obj.abbreviations]:
                     self.show_message(tr('msg.correct_full_name', country=self.current_country), GREEN)
@@ -580,6 +916,7 @@ class GameScreen:
                 self.select_new_country()
             else:
                 self.failed_countries.append(self.current_country)
+                sounds.play_error()
                 abreviaturas = country_obj.abbreviations
                 mensaje_error = tr('msg.wrong_country', answer=self.current_country)
                 if abreviaturas:
@@ -625,6 +962,24 @@ class GameScreen:
                 self.select_new_country()
 
     def update(self):
+        # Actualizar tiempo global para animaciones
+        update_global_time(1/60)
+        
+        # Actualizar sistema de confetti
+        update_confetti()
+        
+        # Actualizar animaciones de botones
+        self.back_button.update()
+        self.skip_button.update()
+        self.global_button.update()
+        self.continent_button.update()
+        self.flags_button.update()
+        self.capitals_button.update()
+        self.by_country_button.update()
+        self.by_capital_button.update()
+        for btn in self.continent_buttons:
+            btn.update()
+        
         if self.message_timer > 0:
             self.message_timer -= 1
             if self.message_timer == 0:
@@ -634,7 +989,10 @@ class GameScreen:
     def draw(self):
         width = self.screen.get_width()
         height = self.screen.get_height()
-        self.screen.fill(WHITE)
+        t = get_global_time()
+        
+        # Fondo animado con estrellas
+        draw_animated_background(self.screen)
 
         # Botón volver
         self.back_button.rect = pygame.Rect(20, 20, int(width * 0.08), int(height * 0.05))
@@ -650,7 +1008,7 @@ class GameScreen:
             self.continent_button.rect = pygame.Rect(center_x, start_y, button_width, button_height)
             self.global_button.draw(self.screen)
             self.continent_button.draw(self.screen)
-            title = self._render(self.message_font, tr('region.choose_mode'), BLACK)
+            title = self._render(self.message_font, tr('region.choose_mode'), TEXT_PRIMARY)
             title_rect = title.get_rect(center=(width // 2, start_y - button_height - spacing * 2))
             self.screen.blit(title, title_rect)
         elif self.region_mode == 'continente' and self.selected_continent is None:
@@ -662,7 +1020,7 @@ class GameScreen:
             for i, btn in enumerate(self.continent_buttons):
                 btn.rect = pygame.Rect(center_x, start_y + i * (button_height + spacing), button_width, button_height)
                 btn.draw(self.screen)
-            title = self._render(self.message_font, tr('region.choose_continent'), BLACK)
+            title = self._render(self.message_font, tr('region.choose_continent'), TEXT_PRIMARY)
             title_rect = title.get_rect(center=(width // 2, start_y - button_height - spacing))
             self.screen.blit(title, title_rect)
         elif not self.game_mode:
@@ -680,7 +1038,7 @@ class GameScreen:
             capitals_country = self._get_capitals_sub_progress('country')
             capitals_capital = self._get_capitals_sub_progress('capital')
             if flags_prog:
-                txt = self._render(self.small_font, f"{flags_prog[0]}/{flags_prog[1]}", BLACK)
+                txt = self._render(self.small_font, f"{flags_prog[0]}/{flags_prog[1]}", TEXT_SECONDARY)
                 rect = txt.get_rect()
                 rect.midleft = (self.flags_button.rect.right + int(width * 0.01), self.flags_button.rect.centery)
                 self.screen.blit(txt, rect)
@@ -692,7 +1050,7 @@ class GameScreen:
                 if capitals_capital:
                     parts_text.append(f"{tr('capitals.by_capital')}: {capitals_capital[0]}/{capitals_capital[1]}")
                 combined = "  ".join(parts_text)
-                txt2 = self._render(self.small_font, combined, BLACK)
+                txt2 = self._render(self.small_font, combined, TEXT_SECONDARY)
                 rect2 = txt2.get_rect()
                 rect2.midleft = (self.capitals_button.rect.right + int(width * 0.01), self.capitals_button.rect.centery)
                 self.screen.blit(txt2, rect2)
@@ -720,19 +1078,19 @@ class GameScreen:
             prog_country = get_capitals_sub_progress('country')
             prog_capital = get_capitals_sub_progress('capital')
             if prog_country:
-                t = self._render(self.small_font, f"{prog_country[0]}/{prog_country[1]}", BLACK)
+                t = self._render(self.small_font, f"{prog_country[0]}/{prog_country[1]}", TEXT_SECONDARY)
                 r = t.get_rect()
                 r.midleft = (self.by_country_button.rect.right + int(width * 0.01), self.by_country_button.rect.centery)
                 self.screen.blit(t, r)
             if prog_capital:
-                t2 = self._render(self.small_font, f"{prog_capital[0]}/{prog_capital[1]}", BLACK)
+                t2 = self._render(self.small_font, f"{prog_capital[0]}/{prog_capital[1]}", TEXT_SECONDARY)
                 r2 = t2.get_rect()
                 r2.midleft = (self.by_capital_button.rect.right + int(width * 0.01), self.by_capital_button.rect.centery)
                 self.screen.blit(t2, r2)
         else:
-            # Puntaje
-            score_text = self._render(self.font, f"{tr('label.score')}: {self.score}/{self.total_countries}", BLACK)
-            self.screen.blit(score_text, (20, int(height * 0.09)))
+            # Puntaje con diseño moderno estilo tarjeta
+            self._draw_modern_score(width, height, t)
+            
             # Estado final del juego (no hay país actual)
             if self.current_country is None:
                 if self.message:
@@ -741,35 +1099,76 @@ class GameScreen:
                     message_rect = message_surface.get_rect(center=(width // 2, height // 2))
                     self.screen.blit(message_surface, message_rect)
                 # Instrucción para volver
-                hint = self._render(self.small_font, tr('common.back') + ' (ESC)', BLACK)
+                hint = self._render(self.small_font, tr('common.back') + ' (ESC)', TEXT_SECONDARY)
                 hint_rect = hint.get_rect(center=(width // 2, height // 2 + 50))
                 self.screen.blit(hint, hint_rect)
             elif self.game_mode == "flags" and self.current_country:
-                # Bandera
+                # Bandera con efecto de glow especial según el país
                 max_flag_width = int(width * 0.45)
                 max_flag_height = int(height * 0.28)
                 flag = self.flag_manager.get_scaled_flag(self.current_country, (max_flag_width, max_flag_height))
                 if flag:
-                    flag_rect = flag.get_rect()
-                    flag_rect.center = (width // 2, height // 2 - int(height * 0.08))
-                    self.screen.blit(flag, flag_rect)
+                    flag_center = (width // 2, height // 2 - int(height * 0.08))
+                    # Usar el efecto especial de glow según el país
+                    draw_flag_with_glow(
+                        self.screen, flag, flag_center, 
+                        self.current_country, t, glow_intensity=1.0
+                    )
 
-                # Input
-                input_width = int(width * 0.32)
-                input_height = int(height * 0.07)
+                # Input con estilo moderno y efectos mejorados
+                input_width = int(width * 0.38)
+                input_height = int(height * 0.08)
                 input_x = (width - input_width) // 2
-                input_y = int(height * 0.75)
+                input_y = int(height * 0.73)
                 self.input_rect = pygame.Rect(input_x, input_y, input_width, input_height)
-                pygame.draw.rect(self.screen, GRAY if self.input_active else BLACK, self.input_rect, 2)
+                
+                # Glow del input según estado
+                input_glow_color = NEON_CYAN if self.input_active else (80, 80, 140)
+                glow_intensity = 0.5 if self.input_active else 0.2
+                glow_intensity += 0.08 * math.sin(t * 3)
+                
+                # Glow más ajustado al tamaño del input
+                glow_size = 8 if self.input_active else 4
+                glow_surf = pygame.Surface(
+                    (self.input_rect.width + glow_size * 2, self.input_rect.height + glow_size * 2), 
+                    pygame.SRCALPHA
+                )
+                for i in range(glow_size, 0, -1):
+                    alpha = int((i / glow_size) * 50 * glow_intensity)
+                    inflated = pygame.Rect(glow_size - i, glow_size - i,
+                                          self.input_rect.width + i * 2, self.input_rect.height + i * 2)
+                    pygame.draw.rect(glow_surf, (*input_glow_color, alpha), inflated, border_radius=12)
+                self.screen.blit(glow_surf, (self.input_rect.x - glow_size, self.input_rect.y - glow_size))
+                
+                # Fondo del input
+                draw_shadow(self.screen, self.input_rect, radius=12)
+                draw_rounded_rect(self.screen, BG_CARD, self.input_rect, 12)
+                
+                # Borde animado RGB uniforme giratorio
+                if self.input_active:
+                    self._draw_rgb_rotating_border(self.input_rect, t, 2)
+                else:
+                    pygame.draw.rect(self.screen, (60, 60, 100), self.input_rect, 2, border_radius=12)
+                
                 original_clip = self.screen.get_clip()
-                input_clip_rect = self.input_rect.inflate(-10, -10)
+                input_clip_rect = self.input_rect.inflate(-16, -8)
                 self.screen.set_clip(input_clip_rect)
                 # Highlight si selección total
                 if self.selection_all and self.input_text:
                     self.screen.blit(self._get_highlight_surface((input_clip_rect.width, input_clip_rect.height)), input_clip_rect.topleft)
-                text_surface = self.font.render(self.input_text, True, BLACK)
-                y_pos = input_clip_rect.y + (input_clip_rect.height - text_surface.get_height()) // 2
-                x_pos = input_clip_rect.x - self.input_scroll_offset
+                
+                # Texto del input - centrado vertical y horizontalmente si hay poco texto
+                text_surface = self.font.render(self.input_text, True, TEXT_PRIMARY)
+                text_width = text_surface.get_width()
+                text_height = text_surface.get_height()
+                y_pos = input_clip_rect.y + (input_clip_rect.height - text_height) // 2
+                
+                # Centrar horizontalmente si el texto cabe, sino alinear a la izquierda con scroll
+                if text_width < input_clip_rect.width - 10:
+                    x_pos = input_clip_rect.x + (input_clip_rect.width - text_width) // 2 - self.input_scroll_offset
+                else:
+                    x_pos = input_clip_rect.x + 5 - self.input_scroll_offset
+                
                 self.screen.blit(text_surface, (x_pos, y_pos))
                 self.screen.set_clip(original_clip)
 
@@ -796,24 +1195,62 @@ class GameScreen:
                     message_rect = message_surface.get_rect(center=(width // 2, msg_y + message_surface.get_height() // 2))
                     self.screen.blit(message_surface, message_rect)
 
-                instruction = self._render(self.message_font, tr('input.country_instruction'), BLACK)
+                instruction = self._render(self.message_font, tr('input.country_instruction'), TEXT_PRIMARY)
                 instruction_rect = instruction.get_rect(center=(width // 2, input_y - int(height * 0.04)))
                 self.screen.blit(instruction, instruction_rect)
             elif self.game_mode == "capitals" and self.quiz_type and self.current_country:
-                input_width = int(width * 0.32)
-                input_height = int(height * 0.07)
+                # Input con estilo moderno para capitales
+                input_width = int(width * 0.38)
+                input_height = int(height * 0.08)
                 input_x = (width - input_width) // 2
-                input_y = int(height * 0.75)
+                input_y = int(height * 0.73)
                 self.input_rect = pygame.Rect(input_x, input_y, input_width, input_height)
-                pygame.draw.rect(self.screen, GRAY if self.input_active else BLACK, self.input_rect, 2)
+                
+                # Glow del input según estado
+                input_glow_color = NEON_PINK if self.input_active else (80, 80, 140)
+                glow_intensity = 0.5 if self.input_active else 0.2
+                glow_intensity += 0.08 * math.sin(t * 3)
+                
+                # Glow más ajustado al tamaño del input
+                glow_size = 8 if self.input_active else 4
+                glow_surf = pygame.Surface(
+                    (self.input_rect.width + glow_size * 2, self.input_rect.height + glow_size * 2), 
+                    pygame.SRCALPHA
+                )
+                for i in range(glow_size, 0, -1):
+                    alpha = int((i / glow_size) * 50 * glow_intensity)
+                    inflated = pygame.Rect(glow_size - i, glow_size - i,
+                                          self.input_rect.width + i * 2, self.input_rect.height + i * 2)
+                    pygame.draw.rect(glow_surf, (*input_glow_color, alpha), inflated, border_radius=12)
+                self.screen.blit(glow_surf, (self.input_rect.x - glow_size, self.input_rect.y - glow_size))
+                
+                # Fondo del input
+                draw_shadow(self.screen, self.input_rect, radius=12)
+                draw_rounded_rect(self.screen, BG_CARD, self.input_rect, 12)
+                
+                # Borde animado RGB uniforme giratorio
+                if self.input_active:
+                    self._draw_rgb_rotating_border(self.input_rect, t, 2)
+                else:
+                    pygame.draw.rect(self.screen, (60, 60, 100), self.input_rect, 2, border_radius=12)
+                
                 original_clip = self.screen.get_clip()
-                input_clip_rect = self.input_rect.inflate(-10, -10)
+                input_clip_rect = self.input_rect.inflate(-16, -8)
                 self.screen.set_clip(input_clip_rect)
                 if self.selection_all and self.input_text:
                     self.screen.blit(self._get_highlight_surface((input_clip_rect.width, input_clip_rect.height)), input_clip_rect.topleft)
-                text_surface = self.font.render(self.input_text, True, BLACK)
-                y_pos = input_clip_rect.y + (input_clip_rect.height - text_surface.get_height()) // 2
-                x_pos = input_clip_rect.x - self.input_scroll_offset
+                
+                # Texto centrado vertical y horizontalmente
+                text_surface = self.font.render(self.input_text, True, TEXT_PRIMARY)
+                text_width = text_surface.get_width()
+                text_height = text_surface.get_height()
+                y_pos = input_clip_rect.y + (input_clip_rect.height - text_height) // 2
+                
+                if text_width < input_clip_rect.width - 10:
+                    x_pos = input_clip_rect.x + (input_clip_rect.width - text_width) // 2 - self.input_scroll_offset
+                else:
+                    x_pos = input_clip_rect.x + 5 - self.input_scroll_offset
+                
                 self.screen.blit(text_surface, (x_pos, y_pos))
                 self.screen.set_clip(original_clip)
                 if self.quiz_type == "country":
@@ -824,7 +1261,7 @@ class GameScreen:
                     instruction = tr('input.country_from_capital_instruction')
                 prompt_rect = prompt_surface.get_rect(center=(width // 2, int(height * 0.35)))
                 self.screen.blit(prompt_surface, prompt_rect)
-                instruction_surface = self._render(self.message_font, instruction, BLACK)
+                instruction_surface = self._render(self.message_font, instruction, TEXT_PRIMARY)
                 instruction_rect = instruction_surface.get_rect(center=(width // 2, input_y - int(height * 0.04)))
                 self.screen.blit(instruction_surface, instruction_rect)
                 if self.message and self.message_timer > 0 and self._message_surface is not None:
@@ -843,12 +1280,9 @@ class GameScreen:
                     message_rect = message_surface.get_rect(center=(width // 2, msg_y + message_surface.get_height() // 2))
                     self.screen.blit(message_surface, message_rect)
 
-        # Cronómetro
+        # Cronómetro con diseño moderno estilo tarjeta
         if self.game_mode and self.current_country and self.chrono_running:
-            mins = self.chrono_elapsed // 60
-            secs = self.chrono_elapsed % 60
-            chrono_text = self.small_font.render(f"{mins:02d} : {secs:02d}", True, BLACK)
-            self.screen.blit(chrono_text, (width // 2 - chrono_text.get_width() // 2, 20))
+            self._draw_modern_timer(width, height, t)
 
         # Debug overlay (dibujar antes del flip)
         if self._debug:
@@ -863,8 +1297,16 @@ class GameScreen:
             ]
             y0 = 5
             for line in dbg_lines:
-                surf = self._render(self.small_font, line, BLACK)
+                surf = self._render(self.small_font, line, TEXT_SECONDARY)
                 self.screen.blit(surf, (5, y0))
                 y0 += surf.get_height() + 2
+        
+        # Dibujar confetti encima de todo
+        draw_confetti(self.screen)
+        
+        # Actualizar y dibujar flash de pantalla
+        update_screen_flash()
+        draw_screen_flash(self.screen)
+        
         pygame.display.flip()
         self.game.clock.tick(FPS)

@@ -5,6 +5,8 @@ _current_lang = CURRENT_LANGUAGE
 # Translation dictionaries
 _TRANSLATIONS = {
     'ES': {
+        'game.title': 'Adiviná la Bandera',
+        'game.subtitle': 'Quiz de Geografía',
         'menu.play': 'Jugar',
         'menu.settings': 'Configuración',
         'menu.language': 'Idioma',
@@ -51,6 +53,8 @@ _TRANSLATIONS = {
     'window.mode.borderless': 'Pantalla completa sin bordes',
     },
     'EN': {
+        'game.title': 'Guess the Flag',
+        'game.subtitle': 'Geography Quiz',
         'menu.play': 'Play',
         'menu.settings': 'Settings',
         'menu.language': 'Language',
@@ -97,6 +101,8 @@ _TRANSLATIONS = {
     'window.mode.borderless': 'Borderless fullscreen',
     },
     'PT': {
+        'game.title': 'Adivinhe a Bandeira',
+        'game.subtitle': 'Quiz de Geografia',
         'menu.play': 'Jogar',
         'menu.settings': 'Configurações',
         'menu.language': 'Idioma',
@@ -143,6 +149,8 @@ _TRANSLATIONS = {
     'window.mode.borderless': 'Tela cheia sem bordas',
     },
     'DE': {
+        'game.title': 'Errate die Flagge',
+        'game.subtitle': 'Geografie-Quiz',
         'menu.play': 'Spielen',
         'menu.settings': 'Einstellungen',
         'menu.language': 'Sprache',
@@ -189,6 +197,8 @@ _TRANSLATIONS = {
     'window.mode.borderless': 'Randloses Vollbild',
     },
     'IT': {
+        'game.title': 'Indovina la Bandiera',
+        'game.subtitle': 'Quiz di Geografia',
         'menu.play': 'Gioca',
         'menu.settings': 'Impostazioni',
         'menu.language': 'Lingua',
